@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Brawl Style Game</title>
+<style>
+    body { margin: 0; overflow: hidden; background: #222; }
+    canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Игрок
+let player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    size: 20,
+    speed: 5
+};
+
+// Пули
+let bullets = [];
+
+// Управление
+let keys = {};
+
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// Стрельба
+canvas.addEventListener("click", (e) => {
+    let angle = Math.atan2(e.clientY - player.y, e.clientX - player.x);
+
+    bullets.push({
+        x: player.x,
+        y: player.y,
+        dx: Math.cos(angle) * 8,
+        dy: Math.sin(angle) * 8,
+        size: 5
+    });
+});
+
+// Обновление
+function update() {
+    // Движение
+    if (keys["w"] || keys["ArrowUp"]) player.y -= player.speed;
+    if (keys["s"] || keys["ArrowDown"]) player.y += player.speed;
+    if (keys["a"] || keys["ArrowLeft"]) player.x -= player.speed;
+    if (keys["d"] || keys["ArrowRight"]) player.x += player.speed;
+
+    // Пули
+    bullets.forEach((b, i) => {
+        b.x += b.dx;
+        b.y += b.dy;
+
+        // удаление если вне экрана
+        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+            bullets.splice(i, 1);
+        }
+    });
+}
+
+// Отрисовка
+function draw() {
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Игрок
+    ctx.fillStyle = "lime";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Пули
+    ctx.fillStyle = "red";
+    bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// Игровой цикл
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
